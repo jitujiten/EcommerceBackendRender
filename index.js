@@ -12,7 +12,7 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const path = require("path");
-const bodyParser = require('body-parser');
+const bodyParser = require("body-parser");
 
 const ProductsRouters = require("./routes/Products");
 const CategoriesRouters = require("./routes/Category");
@@ -34,7 +34,7 @@ opts.secretOrKey = process.env.JWT_SECREET_KEY;
 server.use(express.static(path.resolve(__dirname, "build")));
 
 server.use(cookieParser());
-server.use(bodyParser.json({ limit: '500kb' }));
+server.use(bodyParser.json({ limit: "500kb" }));
 
 server.use(
   session({
@@ -60,10 +60,6 @@ server.use("/auth", AuthRouters.router);
 server.use("/cart", IsAuth(), CartRouters.router);
 server.use("/orders", IsAuth(), OrderRouters.router);
 
-server.get("*", (req, res) =>
-  res.sendFile(path.resolve("build", "index.html"))
-);
-
 //passport strategies
 passport.use(
   "local",
@@ -75,7 +71,7 @@ passport.use(
     try {
       const user = await User.findOne({ email: email }).exec();
       if (!user) {
-       return done(null, false, { message: "Invalid Credentials" });
+        return done(null, false, { message: "Invalid Credentials" });
       }
 
       crypto.pbkdf2(
@@ -99,8 +95,8 @@ passport.use(
             email: user.email,
             addresses: user.addresses,
             orders: user.orders,
-            name:user.name,
-            ProfileUrl:user.ProfileUrl
+            name: user.name,
+            ProfileUrl: user.ProfileUrl,
           });
         }
       );
@@ -122,8 +118,8 @@ passport.use(
           email: user.email,
           addresses: user.addresses,
           orders: user.orders,
-          name:user.name,
-          ProfileUrl:user.ProfileUrl
+          name: user.name,
+          ProfileUrl: user.ProfileUrl,
         }); //this calls serializer
       } else {
         return done(null, false);
@@ -145,8 +141,8 @@ passport.serializeUser(function (user, cb) {
       email: user.email,
       addresses: user.addresses,
       orders: user.orders,
-      name:user.name,
-      ProfileUrl:user.ProfileUrl
+      name: user.name,
+      ProfileUrl: user.ProfileUrl,
     });
   });
 });
@@ -169,25 +165,26 @@ server.post("/create-payment-intent", async (req, res) => {
   const { totalAmount, OrderId } = req.body;
 
   if (!OrderId || !totalAmount) {
-    return res.status(400).send({ error: "Missing orderId or totalAmount in the request body" });
+    return res
+      .status(400)
+      .send({ error: "Missing orderId or totalAmount in the request body" });
   }
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalAmount * 100,
-      currency: "inr",
-      // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
-      automatic_payment_methods: {
-        enabled: true,
-      },
-      metadata: {
-        OrderId,
-      },
-    });
+  // Create a PaymentIntent with the order amount and currency
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: totalAmount * 100,
+    currency: "inr",
+    // In the latest version of the API, specifying the `automatic_payment_methods` parameter is optional because Stripe enables its functionality by default.
+    automatic_payment_methods: {
+      enabled: true,
+    },
+    metadata: {
+      OrderId,
+    },
+  });
 
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
- 
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
 });
 
 ///webhook
